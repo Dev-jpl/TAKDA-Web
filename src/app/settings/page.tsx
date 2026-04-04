@@ -18,10 +18,11 @@ import {
   Plug,
   EnvelopeOpen,
   FolderOpen,
+  IconProps,
 } from "@phosphor-icons/react";
 
 interface SettingItemProps {
-  icon: React.ComponentType<{ size: number; weight: string }>;
+  icon: React.ElementType<IconProps>;
   label: string;
   description: string;
   value?: string | boolean;
@@ -85,82 +86,15 @@ const SettingItem: React.FC<SettingItemProps> = ({
   </motion.button>
 );
 
-interface CalendarItemProps {
-  calendar: ConnectedCalendar;
-  onToggle: (id: string) => void;
-  onRemove: (id: string) => void;
+
+interface TabButtonProps {
+  label: string;
+  icon: React.ElementType<IconProps>;
+  isActive: boolean;
+  onClick: () => void;
 }
 
-const CalendarItem: React.FC<CalendarItemProps> = ({
-  calendar,
-  onToggle,
-  onRemove,
-}) => {
-  const providerColors: Record<string, string> = {
-    Google: "bg-red-500/10 text-red-400 border-red-500/20",
-    Apple: "bg-gray-500/10 text-gray-400 border-gray-500/20",
-    Microsoft: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-    Outlook: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  };
-
-  return (
-    <motion.div
-      whileHover={{ backgroundColor: "rgba(255,255,255,0.01)" }}
-      className="w-full flex items-center justify-between px-6 py-4 rounded-lg border border-border-primary bg-background-tertiary/20 hover:bg-background-tertiary/40 transition-all group"
-    >
-      <div className="flex items-center gap-4 flex-1">
-        <Calendar
-          size={20}
-          weight="light"
-          className="text-modules-knowledge flex-shrink-0"
-        />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-text-primary truncate">
-            {calendar.name}
-          </p>
-          <div className="flex items-center gap-2 mt-1">
-            <span
-              className={`inline-block px-2 py-1 rounded text-xs font-medium border ${
-                providerColors[calendar.provider]
-              }`}
-            >
-              {calendar.provider}
-            </span>
-            {calendar.email && (
-              <span className="text-xs text-text-tertiary">{calendar.email}</span>
-            )}
-          </div>
-        </div>
-      </div>
-      <div className="flex items-center gap-3">
-        {/* Enable/Disable Toggle */}
-        <button
-          onClick={() => onToggle(calendar.id)}
-          className={`relative inline-flex w-12 h-6 rounded-full transition-colors ${
-            calendar.enabled ? "bg-modules-aly" : "bg-background-tertiary"
-          }`}
-        >
-          <motion.span
-            layout
-            className={`inline-block w-5 h-5 bg-white rounded-full absolute top-0.5 ${
-              calendar.enabled ? "right-0.5" : "left-0.5"
-            } transition-all`}
-          />
-        </button>
-        {/* Remove Button */}
-        <button
-          onClick={() => onRemove(calendar.id)}
-          className="p-2 text-text-tertiary hover:text-status-high hover:bg-status-high/10 rounded-lg transition-colors"
-          title="Remove calendar"
-        >
-          <Trash size={18} weight="light" />
-        </button>
-      </div>
-    </motion.div>
-  );
-};
-
-const TabButton = ({ tab, label, icon: Icon, isActive, onClick }: any) => (
+const TabButton: React.FC<TabButtonProps> = ({ label, icon: Icon, isActive, onClick }) => (
   <motion.button
     onClick={onClick}
     className={`w-full px-4 py-2.5 text-left text-xs font-medium transition-colors flex items-center gap-3 ${
@@ -175,14 +109,23 @@ const TabButton = ({ tab, label, icon: Icon, isActive, onClick }: any) => (
   </motion.button>
 );
 
-const IntegrationItem = ({
+interface IntegrationItemProps {
+  name: string;
+  provider: string;
+  email?: string;
+  enabled: boolean;
+  onToggle: () => void;
+  onRemove: () => void;
+}
+
+const IntegrationItem: React.FC<IntegrationItemProps> = ({
   name,
   provider,
   email,
   enabled,
   onToggle,
   onRemove,
-}: any) => {
+}) => {
   const getProviderColor = (provider: string) => {
     const colors: { [key: string]: string } = {
       Google: "bg-status-high text-white",
@@ -365,35 +308,30 @@ export default function SettingsPage() {
           >
             <div className="rounded-lg border border-border-secondary bg-background-secondary overflow-hidden">
               <TabButton
-                tab="integrations"
                 label="Integrations"
                 icon={Plug}
                 isActive={activeTab === "integrations"}
                 onClick={() => setActiveTab("integrations")}
               />
               <TabButton
-                tab="notifications"
                 label="Notifications"
                 icon={Bell}
                 isActive={activeTab === "notifications"}
                 onClick={() => setActiveTab("notifications")}
               />
               <TabButton
-                tab="display"
                 label="Display"
                 icon={Palette}
                 isActive={activeTab === "display"}
                 onClick={() => setActiveTab("display")}
               />
               <TabButton
-                tab="security"
                 label="Security"
                 icon={ShieldCheck}
                 isActive={activeTab === "security"}
                 onClick={() => setActiveTab("security")}
               />
               <TabButton
-                tab="advanced"
                 label="Advanced"
                 icon={Database}
                 isActive={activeTab === "advanced"}
