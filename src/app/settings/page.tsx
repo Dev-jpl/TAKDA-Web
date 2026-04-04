@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
@@ -20,6 +20,8 @@ import {
   FolderOpen,
   IconProps,
 } from "@phosphor-icons/react";
+import { integrationsService, UserIntegration } from "@/services/integrations.service";
+import { supabase } from "@/services/supabase";
 
 interface SettingItemProps {
   icon: React.ElementType<IconProps>;
@@ -29,22 +31,7 @@ interface SettingItemProps {
   onClick?: () => void;
 }
 
-interface ConnectedCalendar {
-  id: string;
-  name: string;
-  provider: "Google" | "Apple" | "Microsoft" | "Outlook";
-  email?: string;
-  enabled: boolean;
-}
 
-interface Integration {
-  id: string;
-  name: string;
-  provider: string;
-  email?: string;
-  enabled: boolean;
-  lastSynced?: string;
-}
 
 type SettingsTab = "integrations" | "notifications" | "display" | "security" | "advanced";
 
@@ -186,46 +173,29 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("integrations");
 
   // Integration States
-  const [calendars, setCalendars] = useState<Integration[]>([
-    {
-      id: "1",
-      name: "John's Calendar",
-      provider: "Google",
-      email: "john@gmail.com",
-      enabled: true,
-      lastSynced: "2024-01-15T10:30:00",
-    },
-    {
-      id: "2",
-      name: "Work Calendar",
-      provider: "Microsoft",
-      email: "john@company.com",
-      enabled: true,
-      lastSynced: "2024-01-15T09:15:00",
-    },
-  ]);
+  const [activeIntegrations, setActiveIntegrations] = useState<UserIntegration[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const [gmailIntegrations, setGmailIntegrations] = useState<Integration[]>([
-    {
-      id: "g1",
-      name: "Personal Gmail",
-      provider: "Gmail",
-      email: "john.doe@gmail.com",
-      enabled: true,
-      lastSynced: "2024-01-15T11:00:00",
-    },
-  ]);
+  const fetchIntegrations = useCallback(async () => {
+    const data = await integrationsService.getIntegrations();
+    setActiveIntegrations(data);
+  }, []);
 
-  const [driveIntegrations, setDriveIntegrations] = useState<Integration[]>([
-    {
-      id: "d1",
-      name: "Google Drive",
-      provider: "Drive",
-      email: "john.doe@gmail.com",
-      enabled: true,
-      lastSynced: "2024-01-15T10:45:00",
-    },
-  ]);
+  const handleAddCalendar = async () => {
+    if (!userId) return;
+    await integrationsService.initiateGoogleAuth(userId);
+  };
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUserId(data.user?.id || null);
+    });
+    
+    const init = async () => {
+      await fetchIntegrations();
+    };
+    init();
+  }, [fetchIntegrations]);
 
   // Settings States
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -234,44 +204,6 @@ export default function SettingsPage() {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [twoFactorAuth, setTwoFactorAuth] = useState(true);
   const [dataCollection, setDataCollection] = useState(false);
-
-  // Integration Handlers
-  const removeCalendar = (id: string) => {
-    setCalendars(calendars.filter((cal) => cal.id !== id));
-  };
-
-  const toggleCalendar = (id: string) => {
-    setCalendars(
-      calendars.map((cal) =>
-        cal.id === id ? { ...cal, enabled: !cal.enabled } : cal
-      )
-    );
-  };
-
-  const removeGmail = (id: string) => {
-    setGmailIntegrations(gmailIntegrations.filter((g) => g.id !== id));
-  };
-
-  const toggleGmail = (id: string) => {
-    setGmailIntegrations(
-      gmailIntegrations.map((g) =>
-        g.id === id ? { ...g, enabled: !g.enabled } : g
-      )
-    );
-  };
-
-  const removeDrive = (id: string) => {
-    setDriveIntegrations(driveIntegrations.filter((d) => d.id !== id));
-  };
-
-  const toggleDrive = (id: string) => {
-    setDriveIntegrations(
-      driveIntegrations.map((d) =>
-        d.id === id ? { ...d, enabled: !d.enabled } : d
-      )
-    );
-  };
-
   return (
     <div className="min-h-screen bg-background-primary">
       {/* Header */}
@@ -363,25 +295,25 @@ export default function SettingsPage() {
                     </h2>
                   </div>
                   <div className="space-y-3">
-                    {calendars.map((cal) => (
+                    {activeIntegrations.filter(i => i.provider === 'google').map((integration) => (
                       <IntegrationItem
-                        key={cal.id}
-                        name={cal.name}
-                        provider={cal.provider}
-                        email={cal.email}
-                        enabled={cal.enabled}
-                        onToggle={() => toggleCalendar(cal.id)}
-                        onRemove={() => removeCalendar(cal.id)}
+                        key={integration.id}
+                        name="Google Calendar"
+                        provider="Google"
+                        email={integration.metadata?.email as string | undefined}
+                        enabled={true}
+                        onToggle={() => {}}
+                        onRemove={() => integrationsService.removeIntegration(integration.id).then(fetchIntegrations)}
                       />
                     ))}
                     <motion.button
                       whileHover={{ backgroundColor: "rgba(255,255,255,0.03)" }}
-                      onClick={() => console.log("Add calendar")}
+                      onClick={handleAddCalendar}
                       className="w-full flex items-center justify-center gap-2 px-6 py-2 rounded-lg border border-dashed border-modules-knowledge/40 bg-modules-knowledge/5 hover:bg-modules-knowledge/10 transition-all"
                     >
                       <Plus size={16} className="text-modules-knowledge" />
                       <span className="text-xs font-medium text-modules-knowledge">
-                        Add Calendar
+                        Add Google Calendar
                       </span>
                     </motion.button>
                   </div>
@@ -401,20 +333,20 @@ export default function SettingsPage() {
                     </h2>
                   </div>
                   <div className="space-y-3">
-                    {gmailIntegrations.map((gmail) => (
+                    {activeIntegrations.filter(i => i.provider === 'google').map((integration) => (
                       <IntegrationItem
-                        key={gmail.id}
-                        name={gmail.name}
-                        provider={gmail.provider}
-                        email={gmail.email}
-                        enabled={gmail.enabled}
-                        onToggle={() => toggleGmail(gmail.id)}
-                        onRemove={() => removeGmail(gmail.id)}
+                        key={integration.id}
+                        name="Gmail Inbox"
+                        provider="Gmail"
+                        email={integration.metadata?.email as string | undefined}
+                        enabled={true}
+                        onToggle={() => {}}
+                        onRemove={() => integrationsService.removeIntegration(integration.id).then(fetchIntegrations)}
                       />
                     ))}
                     <motion.button
                       whileHover={{ backgroundColor: "rgba(255,255,255,0.03)" }}
-                      onClick={() => console.log("Add gmail")}
+                      onClick={handleAddCalendar}
                       className="w-full flex items-center justify-center gap-2 px-6 py-2 rounded-lg border border-dashed border-status-high/40 bg-status-high/5 hover:bg-status-high/10 transition-all"
                     >
                       <Plus size={16} className="text-status-high" />
@@ -439,15 +371,15 @@ export default function SettingsPage() {
                     </h2>
                   </div>
                   <div className="space-y-3">
-                    {driveIntegrations.map((drive) => (
+                    {activeIntegrations.filter(i => i.provider === 'google').map((integration) => (
                       <IntegrationItem
-                        key={drive.id}
-                        name={drive.name}
-                        provider={drive.provider}
-                        email={drive.email}
-                        enabled={drive.enabled}
-                        onToggle={() => toggleDrive(drive.id)}
-                        onRemove={() => removeDrive(drive.id)}
+                        key={integration.id}
+                        name="Google Drive"
+                        provider="Drive"
+                        email={integration.metadata?.email as string | undefined}
+                        enabled={true}
+                        onToggle={() => {}}
+                        onRemove={() => integrationsService.removeIntegration(integration.id).then(fetchIntegrations)}
                       />
                     ))}
                     <motion.button
