@@ -45,29 +45,29 @@ export const ModuleShowcase = () => {
   const activeModule = allModules.find(m => m.id === activeTab) || allModules[0];
 
   return (
-    <section id="intelligence" className="py-32 px-6 bg-background-primary relative">
+    <section id="intelligence" className="py-16 md:py-32 px-4 md:px-6 bg-background-primary relative">
         <div className="max-w-7xl mx-auto">
-            <header className="mb-16 text-center max-w-2xl mx-auto">
+            <header className="mb-10 md:mb-16 text-center max-w-2xl mx-auto">
                 <h2 className="text-xs font-black text-modules-aly uppercase tracking-[0.4em] mb-4">Glimpse into the Registry</h2>
-                <h3 className="text-4xl md:text-5xl font-black tracking-tight text-text-primary mb-6">Interactive OS Oversight</h3>
-                <p className="text-text-tertiary font-medium leading-relaxed">
+                <h3 className="text-3xl md:text-5xl font-black tracking-tight text-text-primary mb-6">Interactive OS Oversight</h3>
+                <p className="text-text-tertiary font-medium leading-relaxed text-sm md:text-base">
                     Identify and coordinate your mission-critical live intelligence through Takda&apos;s professional high-fidelity modules.
                 </p>
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-                {/* Module Selector Sidebar */}
-                <aside className="lg:col-span-4 space-y-8 h-[600px] overflow-y-auto pr-4 custom-scrollbar">
-                    <div className="space-y-3">
-                        <h5 className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.3em] px-4 opacity-50">Core OS Registry</h5>
+                {/* Module Selector Sidebar/Header */}
+                <aside className="lg:col-span-4 flex lg:flex-col gap-4 lg:gap-8 min-h-0 lg:h-[600px] overflow-x-auto lg:overflow-y-auto pb-4 lg:pb-0 pr-2 lg:pr-4 custom-scrollbar snap-x no-scrollbar">
+                    <div className="flex lg:flex-col gap-3 min-w-max lg:min-w-0 snap-start px-1 uppercase whitespace-nowrap">
+                        <h5 className="hidden lg:block text-[10px] font-black text-text-tertiary uppercase tracking-[0.3em] px-4 opacity-50">Core OS Registry</h5>
                         {coreModules.map((m) => (
                             <button
                                 key={m.id}
                                 onClick={() => setActiveTab(m.id)}
-                                className={`w-full p-4 rounded-2xl border text-left transition-all relative overflow-hidden group ${
+                                className={`p-4 md:px-5 lg:w-full rounded-2xl border text-left transition-all relative overflow-hidden group min-w-[140px] lg:min-w-0 ${
                                     activeTab === m.id 
                                         ? "bg-background-secondary border-border-primary shadow-xl" 
-                                        : "bg-background-primary border-border-primary/30 hover:border-border-primary/60 hover:bg-background-secondary/50"
+                                        : "bg-background-primary border-border-primary/30 lg:hover:border-border-primary/60 lg:hover:bg-background-secondary/50"
                                 }`}
                             >
                                 <div className="flex items-center gap-4 relative z-10">
@@ -88,7 +88,7 @@ export const ModuleShowcase = () => {
                                         }`}>
                                             {m.name} OS
                                         </h4>
-                                        <p className="text-[9px] text-text-tertiary font-bold uppercase tracking-widest mt-0.5 opacity-50">
+                                        <p className="hidden lg:block text-[9px] text-text-tertiary font-bold uppercase tracking-widest mt-0.5 opacity-50">
                                             {m.domain}
                                         </p>
                                     </div>
@@ -100,16 +100,16 @@ export const ModuleShowcase = () => {
                         ))}
                     </div>
 
-                    <div className="space-y-3">
-                        <h5 className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.3em] px-4 opacity-50">Specialized Domains</h5>
+                    <div className="flex lg:flex-col gap-3 min-w-max lg:min-w-0 snap-start uppercase whitespace-nowrap">
+                        <h5 className="hidden lg:block text-[10px] font-black text-text-tertiary uppercase tracking-[0.3em] px-4 opacity-50">Specialized Domains</h5>
                         {domainModules.map((m) => (
                             <button
                                 key={m.id}
                                 onClick={() => setActiveTab(m.id)}
-                                className={`w-full p-4 rounded-2xl border text-left transition-all relative overflow-hidden group ${
+                                className={`p-4 md:px-5 lg:w-full rounded-2xl border text-left transition-all relative overflow-hidden group min-w-[140px] lg:min-w-0 ${
                                     activeTab === m.id 
                                         ? "bg-background-secondary border-border-primary shadow-xl" 
-                                        : "bg-background-primary border-border-primary/30 hover:border-border-primary/60 hover:bg-background-secondary/50"
+                                        : "bg-background-primary border-border-primary/30 lg:hover:border-border-primary/60 lg:hover:bg-background-secondary/50"
                                 }`}
                             >
                                 <div className="flex items-center gap-4 relative z-10">
@@ -130,7 +130,7 @@ export const ModuleShowcase = () => {
                                         }`}>
                                             {m.name} Registry
                                         </h4>
-                                        <p className="text-[9px] text-text-tertiary font-bold uppercase tracking-widest mt-0.5 opacity-50">
+                                        <p className="hidden lg:block text-[9px] text-text-tertiary font-bold uppercase tracking-widest mt-0.5 opacity-50">
                                             {m.domain} Oversight
                                         </p>
                                     </div>
@@ -147,7 +147,7 @@ export const ModuleShowcase = () => {
                 <main className="lg:col-span-8">
                     <div className="relative group">
                         {/* Terminal Frame Aesthetic */}
-                        <div className="bg-background-tertiary border border-border-primary rounded-3xl shadow-2xl overflow-hidden min-h-[400px] flex flex-col">
+                        <div className="bg-background-tertiary border border-border-primary rounded-3xl shadow-2xl overflow-hidden min-h-[300px] md:min-h-[400px] flex flex-col">
                             {/* Window Header */}
                             <header className="px-6 h-12 bg-background-secondary border-b border-border-primary flex items-center justify-between">
                                 <div className="flex gap-2">
