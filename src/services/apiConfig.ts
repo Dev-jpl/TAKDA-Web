@@ -1,3 +1,11 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://takda-backend.onrender.com";
+// Check if we are in local environment
+const isLocal = typeof window !== 'undefined'
+    ? (['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname) || process.env.NEXT_PUBLIC_ENVIRONMENT === 'local')
+    : (process.env.ENVIRONMENT === 'local' || process.env.NODE_ENV === 'development');
 
-console.log(`[Takda Web] Mission Registry: Connected to ${API_URL}`);
+// export const API_URL = isLocal 
+//   ? "http://localhost:8000" 
+//   : "https://takda-backend.onrender.com";
+export const API_URL = "http://localhost:8000"
+
+console.log(`[Takda Web] Mission Registry: Connected to ${API_URL} (${isLocal ? 'LOCAL' : 'PRODUCTION'})`);
