@@ -34,7 +34,7 @@ export default function SpaceDetailPage() {
       const uId = user?.id;
       if (uId) setUserId(uId);
       
-      if (!uId) throw new Error('Registry Error: Session deauthorized.');
+      if (!uId) throw new Error('Not authenticated.');
 
       const [spaceData, hubsData] = await Promise.all([
         spacesService.getSpaces(uId).then(spaces => spaces.find(s => s.id === spaceId)),
@@ -44,7 +44,7 @@ export default function SpaceDetailPage() {
       if (spaceData) setSpace(spaceData);
       setHubs(hubsData);
     } catch (error) {
-      console.error('Oversight failure:', error);
+      console.error('Failed to load space:', error);
     } finally {
       setLoading(false);
     }
@@ -64,7 +64,7 @@ export default function SpaceDetailPage() {
     );
   }
 
-  if (!space) return <div className="p-20 text-center">Registry Error: Space deauthorized.</div>;
+  if (!space) return <div className="p-20 text-center text-text-tertiary">Space not found.</div>;
 
   return (
     <main className="p-6 lg:p-12">
@@ -74,7 +74,7 @@ export default function SpaceDetailPage() {
           className="flex items-center gap-2 text-text-tertiary hover:text-text-primary transition-colors mb-8 group"
         >
           <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-          <span className="text-xs font-bold uppercase tracking-widest">Back to Oversight</span>
+          <span className="text-sm text-text-tertiary">Back to Spaces</span>
         </button>
 
         <div className="flex items-center justify-between">
@@ -93,7 +93,7 @@ export default function SpaceDetailPage() {
                 </div>
               </div>
               <p className="text-text-tertiary mt-2 max-w-2xl text-sm leading-relaxed">
-                Coordinate and identify mission-critical context intelligence within your {space.name} domain.
+                All your hubs and projects inside {space.name}.
               </p>
             </div>
           </div>
@@ -114,9 +114,9 @@ export default function SpaceDetailPage() {
       </header>
 
       <section className="mb-6 flex items-center justify-between">
-        <h2 className="text-xs font-bold text-text-tertiary uppercase tracking-[0.2em]">Context Intelligence Hubs</h2>
-        <div className="text-xs text-text-tertiary font-medium">
-          {hubs.length} Active Hubs Identified
+        <h2 className="text-xs font-semibold text-text-tertiary uppercase tracking-wider">Hubs</h2>
+        <div className="text-xs text-text-tertiary">
+          {hubs.length} {hubs.length === 1 ? 'hub' : 'hubs'}
         </div>
       </section>
 
@@ -142,7 +142,7 @@ export default function SpaceDetailPage() {
         {hubs.length === 0 && (
           <div className="col-span-full py-20 text-center bg-background-secondary/30 rounded-3xl border border-dashed border-border-primary">
             <PuzzlePiece size={48} className="mx-auto text-text-tertiary/20 mb-4" />
-            <p className="text-text-tertiary font-medium">No hubs identified in this life domain registry.</p>
+            <p className="text-text-tertiary font-medium">No hubs yet. Create one to get started.</p>
           </div>
         )}
       </div>

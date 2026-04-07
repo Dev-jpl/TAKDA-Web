@@ -53,7 +53,7 @@ export default function HubDetailPage() {
       const data = await trackService.getTasks(hId);
       setTasks(data);
     } catch (err) {
-      console.error('Mission extraction failed:', err);
+      console.error('Failed to load tasks:', err);
     } finally {
       setMissionsLoading(false);
     }
@@ -68,7 +68,7 @@ export default function HubDetailPage() {
         setDocuments(data);
       }
     } catch (err) {
-      console.error('Knowledge extraction failed:', err);
+      console.error('Failed to load documents:', err);
     } finally {
       setDocsLoading(false);
     }
@@ -80,7 +80,7 @@ export default function HubDetailPage() {
       const data = await annotateService.getAnnotations(hId);
       setAnnotations(data);
     } catch (err) {
-      console.error('Reflection extraction failed:', err);
+      console.error('Failed to load notes:', err);
     } finally {
       setNotesLoading(false);
     }
@@ -92,7 +92,7 @@ export default function HubDetailPage() {
       const data = await automateService.getBriefings(hId);
       setBriefings(data);
     } catch (err) {
-      console.error('Briefing extraction failed:', err);
+      console.error('Failed to load briefings:', err);
     } finally {
       setBriefingsLoading(false);
     }
@@ -104,7 +104,7 @@ export default function HubDetailPage() {
       const data = await deliverService.getDeliveries(hId);
       setDeliveries(data);
     } catch (err) {
-      console.error('Dispatch extraction failed:', err);
+      console.error('Failed to load deliveries:', err);
     } finally {
       setDeliveriesLoading(false);
     }
@@ -115,7 +115,7 @@ export default function HubDetailPage() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const uId = user?.id;
-      if (!uId) throw new Error('Registry Error: Session deauthorized.');
+      if (!uId) throw new Error('Not authenticated.');
 
       const [spaceData, hubData] = await Promise.all([
         spacesService.getSpaces(uId).then(spaces => spaces.find(s => s.id === spaceId)),
@@ -131,7 +131,7 @@ export default function HubDetailPage() {
         if (activeModule === 'automate') loadBriefings(hubData.id);
       }
     } catch (err) {
-      console.error('Context oversight failure:', err);
+      console.error('Failed to load hub data:', err);
     } finally {
       setLoading(false);
     }
@@ -171,7 +171,7 @@ export default function HubDetailPage() {
       });
       setTasks(prev => [newTask, ...prev]);
     } catch (err) {
-      console.error('Deployment failure:', err);
+      console.error('Failed to create task:', err);
       loadMissions(hubId);
     }
   };
@@ -183,7 +183,7 @@ export default function HubDetailPage() {
       const newDoc = await knowledgeService.uploadPDF(user.id, hubId, file);
       setDocuments(prev => [newDoc, ...prev]);
     } catch (err) {
-      console.error('PDF ingestion failure:', err);
+      console.error('Failed to upload PDF:', err);
     }
   };
 
@@ -194,12 +194,12 @@ export default function HubDetailPage() {
       const newDoc = await knowledgeService.uploadURL(user.id, hubId, url);
       setDocuments(prev => [newDoc, ...prev]);
     } catch (err) {
-      console.error('URL ingestion failure:', err);
+      console.error('Failed to upload URL:', err);
     }
   };
 
   const handleDeleteDoc = async (docId: string) => {
-    if (!confirm('Extraction confirm? Registry data is permanent.')) return;
+    if (!confirm('Delete this document? This cannot be undone.')) return;
     try {
       await knowledgeService.deleteDocument(docId);
       setDocuments(prev => prev.filter(d => d.id !== docId));
