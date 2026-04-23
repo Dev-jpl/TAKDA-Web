@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -240,9 +240,24 @@ function IntegrationCard({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+function OAuthCallbackHandler({ onSuccess }: { onSuccess: () => void }) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    const integration = searchParams.get("integration");
+    const status = searchParams.get("status");
+    if (integration && status === "success") {
+      onSuccess();
+      router.replace("/integrations");
+    }
+  }, [searchParams, onSuccess, router]);
+
+  return null;
+}
+
 export default function IntegrationsPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [userId, setUserId] = useState<string | null>(null);
   const [integrations, setIntegrations] = useState<UserIntegration[]>([]);
@@ -278,24 +293,12 @@ export default function IntegrationsPage() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       const uid = data.user?.id;
-      if (uid) {
-        setUserId(uid);
-        fetchIntegrations();
-        fetchActivities(uid);
-      }
+      if (!uid) return;
+      setUserId(uid);
+      fetchIntegrations();
+      fetchActivities(uid);
     });
   }, [fetchIntegrations, fetchActivities]);
-
-  // Handle OAuth callback redirect
-  useEffect(() => {
-    const integration = searchParams.get("integration");
-    const status = searchParams.get("status");
-    if (integration && status === "success") {
-      showToast(`${integration.charAt(0).toUpperCase() + integration.slice(1)} connected!`);
-      fetchIntegrations();
-      router.replace("/integrations");
-    }
-  }, [searchParams, fetchIntegrations, router]);
 
   const handleSyncStrava = async () => {
     if (!userId || syncingStrava) return;
@@ -326,6 +329,14 @@ export default function IntegrationsPage() {
 
   return (
     <div className="min-h-screen bg-background-primary">
+      <Suspense>
+        <OAuthCallbackHandler onSuccess={() => {
+          const params = new URLSearchParams(window.location.search);
+          const integration = params.get("integration");
+          if (integration) showToast(`${integration.charAt(0).toUpperCase() + integration.slice(1)} connected!`);
+          fetchIntegrations();
+        }} />
+      </Suspense>
       {/* Toast */}
       <AnimatePresence>
         {toast && (

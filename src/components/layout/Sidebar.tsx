@@ -10,6 +10,12 @@ import {
   Tray,
   CaretDown,
   Plugs,
+  ClockCounterClockwise,
+  TreeStructure,
+  AppWindow,
+  HandbagIcon,
+  PencilLine,
+  ChartPie,
 } from '@phosphor-icons/react';
 import { ASSISTANT_NAME } from '@/constants/brand';
 import { ProfileMenuPopup } from '@/components/profile/ProfileMenuPopup';
@@ -126,30 +132,76 @@ export const Sidebar: React.FC = () => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [userName, setUserName] = useState<string>("You");
   const [initials, setInitials] = useState<string>("—");
+  const [navPins, setNavPins] = useState<any[]>([]);
 
   const integrationsActive = pathname.startsWith("/integrations") || pathname === "/calendar";
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
-        const full = user.user_metadata?.full_name || user.email || "";
+        const full  = user.user_metadata?.full_name || user.email || "";
         const parts = full.split(" ");
         const first = parts[0] || "";
-        const last = parts[1] || "";
+        const last  = parts[1] || "";
         setUserName(first || full);
         setInitials(
           first && last
             ? `${first[0]}${last[0]}`.toUpperCase()
             : full.slice(0, 2).toUpperCase()
         );
+
+        // Upsert profile row then fetch nav_pins
+        supabase
+          .from("user_profiles")
+          .upsert({ id: user.id }, { onConflict: "id", ignoreDuplicates: true })
+          .then(() =>
+            supabase
+              .from("user_profiles")
+              .select("nav_pins")
+              .eq("id", user.id)
+              .maybeSingle()
+          )
+          .then(({ data }) => {
+            if (data?.nav_pins && Array.isArray(data.nav_pins)) {
+              setNavPins(data.nav_pins);
+            }
+          });
       }
     });
   }, []);
 
+  const ICONS: Record<string, React.ElementType> = {
+    House,
+    FolderOpen,
+    AppWindow,
+    Tray,
+    TreeStructure,
+    HandbagIcon,
+    ClockCounterClockwise,
+    Plugs,
+    Sparkle,
+    PencilLine,
+    ChartPie
+  };
+
+  const defaultNav = [
+    { type: 'item', href: '/dashboard', icon: 'House', label: 'Home' },
+    { type: 'item', href: '/spaces', icon: 'FolderOpen', label: 'Spaces' },
+    { type: 'item', href: '/screens', icon: 'AppWindow', label: 'Screens' },
+    { type: 'item', href: '/vault', icon: 'Tray', label: 'Vault' },
+    { type: 'item', href: '/automate', icon: 'TreeStructure', label: 'Automate' },
+    { type: 'item', href: '/marketplace', icon: 'HandbagIcon', label: 'Marketplace' },
+    { type: 'item', href: '/module-creator', icon: 'PencilLine', label: 'Creator' },
+    { type: 'item', href: '/creator/dashboard', icon: 'ChartPie', label: 'Earnings' },
+    { type: 'item', href: '/history', icon: 'ClockCounterClockwise', label: 'History' },
+  ];
+
+  const pinsToRender = navPins.length > 0 ? navPins : defaultNav;
+
   return (
-    <aside className="w-60 bg-background-secondary border-r border-border-primary px-4 py-6 hidden lg:flex flex-col gap-6 z-50">
-      {/* Brand */}
-      <div className="flex items-center gap-2.5 px-1 mb-2">
+    <aside className="w-60 bg-background-secondary border-r border-border-primary hidden lg:flex flex-col z-50">
+      {/* Brand — matches TopNav h-12 exactly */}
+      <div className="h-12 flex items-center gap-2.5 px-5 border-b border-border-primary shrink-0">
         <div className="w-7 h-7 rounded-lg bg-modules-aly/15 flex items-center justify-center border border-modules-aly/25">
           <Sparkle size={15} color="var(--modules-aly)" weight="fill" />
         </div>
@@ -157,10 +209,17 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Main nav */}
-      <nav className="flex flex-col gap-0.5">
-        <NavItem href="/dashboard" icon={House}      label="Home"   active={pathname === "/dashboard"} />
-        <NavItem href="/spaces"    icon={FolderOpen} label="Spaces" active={pathname.startsWith("/spaces")} />
-        <NavItem href="/vault"     icon={Tray}       label="Vault"  active={pathname === "/vault"} />
+      <div className="flex flex-col gap-6 px-4 py-6 flex-1 overflow-y-auto">
+        <nav className="flex flex-col gap-0.5">
+        {pinsToRender.map((pin, i) => {
+          if (pin.type === 'item') {
+            const active = pin.href === '/' ? pathname === '/' : pathname.startsWith(pin.href);
+            return (
+              <NavItem key={i} href={pin.href} icon={ICONS[pin.icon] || AppWindow} label={pin.label} active={active} />
+            );
+          }
+          return null;
+        })}
         <NavGroup
           icon={Plugs}
           label="Integrations"
@@ -177,7 +236,7 @@ export const Sidebar: React.FC = () => {
       {/* Ask Aly */}
       <nav className="flex flex-col gap-0.5">
         <p className="text-[10px] font-semibold text-text-tertiary/50 uppercase tracking-wider mb-1 px-3">Assistant</p>
-        <NavItem href="/coordinator" icon={Sparkle} label={`Ask ${ASSISTANT_NAME}`} active={pathname === "/coordinator"} />
+        <NavItem href="/chat" icon={Sparkle} label={`Ask ${ASSISTANT_NAME}`} active={pathname === "/chat"} />
       </nav>
 
       {/* Profile */}
@@ -199,6 +258,7 @@ export const Sidebar: React.FC = () => {
           isOpen={isProfileMenuOpen}
           onClose={() => setIsProfileMenuOpen(false)}
         />
+      </div>
       </div>
     </aside>
   );
