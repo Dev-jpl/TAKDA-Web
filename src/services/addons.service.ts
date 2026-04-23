@@ -1,6 +1,6 @@
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-export type AddonType = 'calorie_counter' | 'expense_tracker' | 'habit_tracker' | 'workout_log' | 'sleep_tracker';
+export type AddonType = 'calorie_counter' | 'expense_tracker' | 'habit_tracker' | 'workout_log' | 'sleep_tracker' | (string & {});
 
 export interface HubAddon {
   id: string;

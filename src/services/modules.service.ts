@@ -9,6 +9,9 @@ export interface ModuleDefinition {
   schema: any[];
   layout: Record<string, any>;
   is_global: boolean;
+  price?: number | string | null;
+  brand_color?: string | null;
+  icon_name?: string | null;
   created_at: string;
 }
 
